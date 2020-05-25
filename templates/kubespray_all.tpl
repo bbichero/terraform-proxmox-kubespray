@@ -37,25 +37,6 @@ loadbalancer_apiserver:
 #  - 8.8.8.8
 #  - 8.8.4.4
 
-## There are some changes specific to the cloud providers
-## for instance we need to encapsulate packets with some network plugins
-## If set the possible values are either 'gce', 'aws', 'azure', 'openstack', 'vsphere', 'oci', or 'external'
-## When openstack is used make sure to source in the openstack credentials
-## like you would do when using nova-client before starting the playbook.
-## Note: The 'external' cloud provider is not supported. 
-## TODO(riverzhang): https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/#running-cloud-controller-manager
-cloud_provider:  "vsphere"
-vsphere_vcenter_ip: "${vsphere_vcenter_ip}"
-vsphere_vcenter_port: 443
-vsphere_insecure: 1
-vsphere_user: "${vsphere_user}"
-vsphere_password: "${vsphere_password}"
-vsphere_datacenter: "${vsphere_datacenter}"
-vsphere_datastore: "${vsphere_datastore}"
-vsphere_working_dir: "${vsphere_working_dir}"
-vsphere_scsi_controller_type: "pvscsi"
-vsphere_resource_pool: "${vsphere_resource_pool}"
-
 ## kubeadm deployment mode
 kubeadm_enabled: true
 

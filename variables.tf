@@ -1,52 +1,34 @@
 #====================#
-# vCenter connection #
+# Proxmox connection #
 #====================#
 
-variable "vsphere_user" {
-  description = "vSphere user name"
+variable "proxmox_url" {
+  description = "Proxmox API url"
 }
 
-variable "vsphere_password" {
-  description = "vSphere password"
+variable "proxmox_user" {
+  description = "Proxmox user name"
 }
 
-variable "vsphere_vcenter" {
-  description = "vCenter server FQDN or IP"
+variable "proxmox_otp" {
+  description = "Proxmox OTP"
 }
 
-variable "vsphere_unverified_ssl" {
-  description = "Is the vCenter using a self signed certificate (true/false)"
+variable "proxmox_password" {
+  description = "Proxmox password"
 }
 
-variable "vsphere_datacenter" {
-  description = "vSphere datacenter"
+variable "proxmox_unverified_ssl" {
+  description = "Is the Proxmox using a self signed certificate (true/false)"
 }
 
-variable "vsphere_drs_cluster" {
-  description = "vSphere cluster"
-  default     = ""
+variable "proxmox_node" {
+  description = "Proxmox node"
 }
 
-variable "vsphere_resource_pool" {
-  description = "vSphere resource pool"
-}
-
-variable "vsphere_enable_anti_affinity" {
-  description = "Enable anti affinity between master VMs and between worker VMs (DRS need to be enable on the cluster)"
-  default     = "false"
-}
-
-variable "vsphere_vcp_user" {
-  description = "vSphere user name for the Kubernetes vSphere Cloud Provider plugin"
-}
-
-variable "vsphere_vcp_password" {
-  description = "vSphere password for the Kubernetes vSphere Cloud Provider plugin"
-}
-
-variable "vsphere_vcp_datastore" {
-  description = "vSphere default datastore for the Kubernetes vSphere Cloud Provider plugin"
-}
+#variable "proxmox_resource_pool" {
+#  description = "Proxmox resource pool"
+#}
 
 #===========================#
 # Kubernetes infrastructure #
@@ -58,47 +40,55 @@ variable "action" {
 }
 
 variable "worker" {
-  type        = "list"
+  type        = list(string)
   description = "List of worker IPs to remove"
 
   default = [""]
 }
 
 variable "vm_user" {
-  description = "SSH user for the vSphere virtual machines"
+  description = "SSH user for the Proxmox virtual machines"
 }
 
 variable "vm_password" {
-  description = "SSH password for the vSphere virtual machines"
+  description = "SSH password for the Proxmox virtual machines"
 }
 
-variable "vm_privilege_password" {
-  description = "Sudo or su password for the vSphere virtual machines"
+variable "vm_numa" {
+  description = "Multi socket cpu"
+}
+
+variable "vm_sockets" {
+  description = "VM CPU socket numbers"
 }
 
 variable "vm_distro" {
-  description = "Linux distribution of the vSphere virtual machines (ubuntu/centos/debian/rhel)"
+  description = "Linux distribution of the Proxmox virtual machines (ubuntu/centos/debian/rhel)"
 }
 
-variable "vm_datastore" {
-  description = "Datastore used for the vSphere virtual machines"
+variable "vm_disk_type" {
+  description = "Disk type (scsi, virtio, ..)"
 }
 
-variable "vm_network" {
-  description = "Network used for the vSphere virtual machines"
+variable "vm_storage" {
+  description = "Storage name"
+}
+
+variable "vm_storage_type" {
+  description = "Storage type (lvm,sci)"
+}
+
+variable "vm_network_bridge" {
+  description = "Network bridge used for the Proxmox virtual machines"
 }
 
 variable "vm_template" {
-  description = "Template used to create the vSphere virtual machines (linked clone)"
+  description = "Template used to create the Proxmox virtual machines (linked clone)"
 }
 
-variable "vm_folder" {
-  description = "vSphere Virtual machines folder"
-}
-
-variable "vm_linked_clone" {
-  description = "Use linked clone to create the vSphere virtual machines from the template (true/false). If you would like to use the linked clone feature, your template need to have one and only one snapshot"
-  default     = "false"
+variable "vm_full_clone" {
+  description = "Use linked clone to create the Proxmox virtual machines from the template (true/false). If you would like to use the linked clone feature, your template need to have one and only one snapshot"
+  default     = "true"
 }
 
 variable "k8s_kubespray_url" {
@@ -108,21 +98,21 @@ variable "k8s_kubespray_url" {
 
 variable "k8s_kubespray_version" {
   description = "Kubespray version"
-  default     = "2.8.2"
+  default     = "2.13.0"
 }
 
 variable "k8s_version" {
   description = "Version of Kubernetes that will be deployed"
-  default     = "1.12.5"
+  default     = "1.17.6"
 }
 
 variable "vm_master_ips" {
-  type        = "map"
+  type        = map(string)
   description = "IPs used for the Kubernetes master nodes"
 }
 
 variable "vm_worker_ips" {
-  type        = "map"
+  type        = map(string)
   description = "IPs used for the Kubernetes worker nodes"
 }
 
@@ -131,12 +121,16 @@ variable "vm_haproxy_vip" {
 }
 
 variable "vm_haproxy_ips" {
-  type        = "map"
+  type        = map(string)
   description = "IP used for two HAProxy virtual machine"
 }
 
 variable "vm_netmask" {
   description = "Netmask used for the Kubernetes nodes and HAProxy (example: 24)"
+}
+
+variable "vm_searchdomain" {
+  description = "Search domain for DNS kuberntes nodes"
 }
 
 variable "vm_gateway" {
@@ -147,8 +141,16 @@ variable "vm_dns" {
   description = "DNS for the Kubernetes nodes"
 }
 
-variable "vm_domain" {
-  description = "Domain for the Kubernetes nodes"
+variable "vm_ssh_user" {
+  description = "User used for ssh connection"
+}
+
+variable "vm_ssh_user_password" {
+  description = "User password"
+}
+
+variable "vm_sshkeys" {
+  description = "ssh public key present in home directory of ssh_user"
 }
 
 variable "k8s_network_plugin" {
@@ -166,54 +168,52 @@ variable "k8s_dns_mode" {
   default     = "coredns"
 }
 
-variable "vm_master_cpu" {
-  description = "Number of vCPU for the Kubernetes master virtual machines"
+variable "vm_master_cores" {
+  description = "Number of CPU Thread (vCPUs = Socket * cores) for the Kubernetes master virtual machines"
 }
 
 variable "vm_master_ram" {
   description = "Amount of RAM for the Kubernetes master virtual machines (example: 2048)"
 }
 
-variable "vm_worker_cpu" {
-  description = "Number of vCPU for the Kubernetes worker virtual machines"
+variable "vm_master_size" {
+  description = "Disk size in GB of VM"
+}
+
+variable "vm_worker_cores" {
+  description = "Number of CPU Thread (vCPUs = Socket * cores) for the Kubernetes worker virtual machines"
 }
 
 variable "vm_worker_ram" {
   description = "Amount of RAM for the Kubernetes worker virtual machines (example: 2048)"
 }
 
-variable "vm_haproxy_cpu" {
-  description = "Number of vCPU for the HAProxy virtual machine"
+variable "vm_worker_size" {
+  description = "Disk size in GB of VM"
+}
+
+variable "vm_haproxy_cores" {
+  description = "Number of CPU Thread (vCPUs = Socket * cores) for the haproxy virtual machines"
 }
 
 variable "vm_haproxy_ram" {
   description = "Amount of RAM for the HAProxy virtual machine (example: 1024)"
 }
 
+variable "vm_haproxy_size" {
+  description = "Disk size in GB of VM"
+}
+
 variable "vm_name_prefix" {
   description = "Prefix for the name of the virtual machines and the hostname of the Kubernetes nodes"
 }
 
-#================#
-# Redhat account #
-#================#
+#=================#
+# Ansible setting #
+#=================#
 
-variable "rh_subscription_server" {
-  description = "Address of the Redhat subscription server"
-  default     = "subscription.rhsm.redhat.com"
+variable "ansible_python_interpreter_path" {
+  description = "Python path binary used by ansible"
+  default     = "/usr/bin/python"
 }
 
-variable "rh_unverified_ssl" {
-  description = "Disable the Redhat subscription server certificate verification"
-  default     = "false"
-}
-
-variable "rh_username" {
-  description = "Username of your Redhat account"
-  default     = "none"
-}
-
-variable "rh_password" {
-  description = "Password of your Redhat account"
-  default     = "none"
-}
